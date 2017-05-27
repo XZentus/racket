@@ -5,15 +5,15 @@
 (define function-probability 0.8)
 (define arg-probability 0.7)
 (define min-val -2)
-(define max-val  2)
+(define max-val 2)
 (define mutate-arg 0.1)
 (define mutate-num 0.6)
 (define mutate-fun 0.2)
 (define (mutate-min x) -1)
-(define (mutate-max x)  1)
+(define (mutate-max x) 1)
 
 (define fitness-min -7)
-(define fitness-max  7)
+(define fitness-max 7)
 (define fitness-points 100)
 
 (define population-size 50)
@@ -101,33 +101,49 @@
            `(+ ,arg1 ,arg2))))
        ((eq? fun '-)
         (cond
-          ((equal? arg1 arg2)                    0)
-          ((and (number? arg1) (number? arg2))  (- arg1 arg2))
-          ((and (number? arg2) (= arg2 0))      arg1)
-          ((and (number? arg1) (= arg1 0) (number? arg2)) (- arg2))
-          (else                                   `(- ,arg1 ,arg2))))
+          ((equal? arg1 arg2)
+           0)
+          ((and (number? arg1) (number? arg2))
+           (- arg1 arg2))
+          ((and (number? arg2) (= arg2 0))
+           arg1)
+          ((and (number? arg1) (= arg1 0) (number? arg2))
+           (- arg2))
+          (else
+           `(- ,arg1 ,arg2))))
        ((eq? fun '*)
         (cond
-          ((and (number? arg1) (number? arg2)) (* arg1 arg2))
-          ((and (number? arg1) (= arg1 1))     arg2)
-          ((and (number? arg2) (= arg2 1))     arg1)
-          ((and (number? arg1) (= arg1 -1) (number? arg2)) (- arg2))
-          ((and (number? arg2) (= arg2 -1) (number? arg1)) (- arg1))
-          (else                                  `(* ,arg1 ,arg2))))
+          ((and (number? arg1) (number? arg2))
+           (* arg1 arg2))
+          ((and (number? arg1) (= arg1 1))
+           arg2)
+          ((and (number? arg2) (= arg2 1))
+           arg1)
+          ((and (number? arg1) (= arg1 -1) (number? arg2))
+           (- arg2))
+          ((and (number? arg2) (= arg2 -1) (number? arg1))
+           (- arg1))
+          (else
+           `(* ,arg1 ,arg2))))
        ((eq? fun '/)
         (cond
           ((or (and (number? arg1) (= arg1 0))
-               (and (number? arg2) (= arg2 0))) (error "division by zero"))
-          ((equal? arg1 arg2)   1)
-          ((and (number? arg2) (= arg2 1))     arg1)
-          ((and (number? arg1) (number? arg2)) (/ arg1 arg2))
-          (else                               `(/ ,arg1 ,arg2))))
+               (and (number? arg2) (= arg2 0)))
+           (error "division by zero"))
+          ((equal? arg1 arg2)
+           1)
+          ((and (number? arg2) (= arg2 1))
+           arg1)
+          ((and (number? arg1) (number? arg2))
+           (/ arg1 arg2))
+          (else
+           `(/ ,arg1 ,arg2))))
        (else arg)))
     (else arg)))
 
 (define (simplify arg)
   (with-handlers
-      [(exn:fail? (lambda (exn) exception-weight))]
+      [(exn:fail? (λ (exn) exception-weight))]
     (simplify-routine arg)))
 
 (define (mutate fun depth)
@@ -155,13 +171,13 @@
 (define (evaluate d iterations fun)
   (define values (generate-values fun))
   (define population
-    (for/vector ((x (in-range population-size)))
+    [for/vector ((x (in-range population-size)))
       (define gfun (gen-fun d))
       (define gfun-data (generate-values (eval `(λ ,args-list ,(simplify gfun)))))
-      (cons gfun (compare-data values gfun-data))))
+      (cons gfun (compare-data values gfun-data))])
   {for ((n (in-range iterations)))
     [vector-sort! population < #:key cdr]
-    [for ((i (in-range individuals-survive)))     
+    [for ((i (in-range individuals-survive))) 
       (define mut-fun (mutate (car (vector-ref population i)) d))
       (define mut-vals (generate-values (eval `(λ ,args-list ,(simplify mut-fun)))))
       (define result (compare-data values mut-vals))
@@ -171,7 +187,8 @@
       (define gfun (gen-fun d))
       (define gfun-data (generate-values (eval `(λ ,args-list ,(simplify gfun)))))
       (vector-set! population i (cons gfun (compare-data values gfun-data)))]
-    (when (= 0 (remainder n 100)) (printf "Iteration ~A...~%" n))}
+    (when (= 0 (remainder n 100))
+      (printf "Iteration ~A...~%" n))}
   population)
 
 (define (enforce-compile arg)
