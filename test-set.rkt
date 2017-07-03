@@ -6,11 +6,23 @@
     (set! result (+ result x)))
   result)
 
+(define (test-box a b c)
+  (define result (box 0))
+  (for ((x (in-range a b c)))
+    (set-box! result (+ (unbox result) x)))
+  (unbox result))
+
 (define (test-set-do a b c)
   (define result 0)
   (do ((x a (+ x c)))
     ((>= x b) result)
     (set! result (+ result x))))
+
+(define (test-box-do a b c)
+  (define result (box 0))
+  (do ((x a (+ x c)))
+    ((>= x b) (unbox result))
+    (set-box! result (+ (unbox result) x))))
 
 (define (test-rec a b c)
   (letrec
