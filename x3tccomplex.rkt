@@ -20,10 +20,9 @@
               (cons 'using-type using-type)
               (cons 'num num))))
 
-(define (make-factory name cycle-length factory-wares)
+(define (make-factory cycle-length factory-wares)
   (make-hash
    (list
-    (cons 'name name)
     (cons 'cycle-length cycle-length)
     (cons 'wares factory-wares))))
 
@@ -52,7 +51,7 @@
                                                            ("Ore" final 30)))
               (list "Silicon Mine XL 1-58-20" (hms 0 1 58) '(("Energy cells" raw -480)
                                                              ("Silicon Wafers" final 20))))])
-      (hash-set! h (car x) (apply make-factory x)))
+      (hash-set! h (car x) (apply make-factory (cdr x))))
     h))
 
 (define (make-complex factories-list)
