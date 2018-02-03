@@ -1,11 +1,6 @@
 #lang racket
 
-(define (make-ware name min-price med-price max-price)
-  (make-hash (list
-              (cons 'name name)
-              (cons 'min-price min-price)
-              (cons 'med-price med-price)
-              (cons 'max-price max-price))))
+(require srfi/54)
 
 (define wares-db
   (let ((h (make-hash)))
@@ -16,7 +11,7 @@
                ("Заградительная ракета \"Булава\""  26954 33692 40430)
                ("Соевая мука"                         204   364   524)
                ("Соевые бобы"                          14    28    42))])
-      (hash-set! h (car x) (apply make-ware x)))
+      (hash-set! h (car x) (cdr x)))
     h))
 
 (define (make-factory-ware name using-type num)
@@ -38,25 +33,25 @@
 (define factories-db
   (let ((h (make-hash)))
     (for ([x (list
-              (list "Пар Завод ракет \"Булава\" L" (hms 0 10) '(("Батареи" 'raw -750)
-                                                                ("Руда" 'raw -125)
-                                                                ("Соевая мука" 'raw -100)
-                                                                ("Заградительная ракета \"Булава\"" 'final 5)))
-              (list "Пар Завод ракет \"Томагавк\" XL" (hms 0 20) '(("Батареи" 'raw -3000)
-                                                                   ("Руда" 'raw -500)
-                                                                   ("Соевая мука" 'raw -400)
-                                                                   ("Тяжелая ракета \"Томагавк\"" 'final 30)))
-              (list "Пар Соевая фабрика XL" (hms 0 1) '(("Батареи" 'raw -150)
-                                                        ("Соевые бобы" 'raw -120)
-                                                        ("Соевая мука" 'final 20)))
-              (list "Пар Соевая ферма XL" (hms 0 1) '(("Батареи" 'raw -150)
-                                                      ("Соевые бобы" 'final 120)))
-              (list "Рудная шахта XL 1-15-30" (hms 0 1 15) '(("Батареи" 'raw -180)
-                                                             ("Руда" 'final 30)))
-              (list "Рудная шахта XL 1-3-30" (hms 0 1 15) '(("Батареи" 'raw -180)
-                                                            ("Руда" 'final 30)))
-              (list "Кремниевая шахта XL 1-58-20" (hms 0 1 58) '(("Батареи" 'raw -480)
-                                                                 ("Кремниевые пластины" 'final 20))))])
+              (list "Пар Завод ракет \"Булава\" L" (hms 0 10) '(("Батареи" raw -750)
+                                                                ("Руда" raw -125)
+                                                                ("Соевая мука" raw -100)
+                                                                ("Заградительная ракета \"Булава\"" final 5)))
+              (list "Пар Завод ракет \"Томагавк\" XL" (hms 0 20) '(("Батареи" raw -3000)
+                                                                   ("Руда" raw -500)
+                                                                   ("Соевая мука" raw -400)
+                                                                   ("Тяжелая ракета \"Томагавк\"" final 30)))
+              (list "Пар Соевая фабрика XL" (hms 0 1) '(("Батареи" raw -150)
+                                                        ("Соевые бобы" raw -120)
+                                                        ("Соевая мука" final 20)))
+              (list "Пар Соевая ферма XL" (hms 0 1) '(("Батареи" raw -150)
+                                                      ("Соевые бобы" final 120)))
+              (list "Рудная шахта XL 1-15-30" (hms 0 1 15) '(("Батареи" raw -180)
+                                                             ("Руда" final 30)))
+              (list "Рудная шахта XL 1-3-30" (hms 0 1 15) '(("Батареи" raw -180)
+                                                            ("Руда" final 30)))
+              (list "Кремниевая шахта XL 1-58-20" (hms 0 1 58) '(("Батареи" raw -480)
+                                                                 ("Кремниевые пластины" final 20))))])
       (hash-set! h (car x) (apply make-factory x)))
     h))
 
@@ -109,4 +104,49 @@
     (let ((f-num (hash-iterate-pair complex id)))
       (parse-factory (car f-num) (cdr f-num))))
   wares-data)
-        
+
+(define (print-balance prod-using (wares-db wares-db) (tm 1h))
+  (define-values (raw inter final)
+    (let loop ([wares prod-using]
+               [raw '()]
+               [inter '()]
+               [final '()])
+      (cond
+        [(null? wares) (values raw inter final)]
+        [else
+         (define w (car wares))
+         (cond
+           [(equal? (cadr w) 'raw) (loop (cdr wares) (cons w raw) inter final)]
+           [(equal? (cadr w) 'inter) (loop (cdr wares) raw (cons w inter) final)]
+           [(equal? (cadr w) 'final) (loop (cdr wares) raw inter (cons w final))])])))
+  (define (+> x y)
+    (list [+ (car x) (car y)]
+          [+ (cadr x) (cadr y)]
+          [+ (caddr x) (caddr y)]))
+  (define (+< x y)
+    (list [+ (car x) (caddr y)]
+          [+ (cadr x) (cadr y)]
+          [+ (caddr x) (car y)]))
+  (define (calc-balance items)
+    (let loop ([item-list items]
+               [bl '(0 0 0)])
+      (cond
+        [(null? item-list) bl]
+        [else
+         (define w (car item-list))
+         (define prices (hash-ref wares-db (car w)))
+         (displayln (car w))
+         (define num (* (cddr w) tm))
+         (displayln (exact->inexact num))
+         (if (> (cddr w) 0)
+             (loop (cdr item-list) (list
+                                    (+ (car bl) (* (car prices) num))
+                                    (+ (cadr bl) (* (cadr prices) num))
+                                    (+ (caddr bl) (* (caddr prices) num))))
+             (loop (cdr item-list) (list
+                                    (+ (car bl) (* (caddr prices) num))
+                                    (+ (cadr bl) (* (cadr prices) num))
+                                    (+ (caddr bl) (* (car prices) num)))))])))
+  (displayln (calc-balance raw))
+  (displayln (calc-balance inter))
+  (displayln (calc-balance final)))
