@@ -4,13 +4,13 @@
 
 (define wares-db
   (let ((h (make-hash)))
-    (for ([x '(("Батареи"                              12    16    20)
-               ("Руда"                                 50   128   206)
-               ("Кремниевые пластины"                 232   504   776)
-               ("Тяжелая ракета \"Томагавк\""       20888 22460 24032)
-               ("Заградительная ракета \"Булава\""  26954 33692 40430)
-               ("Соевая мука"                         204   364   524)
-               ("Соевые бобы"                          14    28    42))])
+    (for ([x '(("Energy cells" 12 16 20)
+               ("Ore" 50 128 206)
+               ("Silicon Wafers" 232 504 776)
+               ("Tomahawk Heavy Missile" 20888 22460 24032)
+               ("Flail Barrage Missile" 26954 33692 40430)
+               ("Soja Husk" 204 364 524)
+               ("Soja Beans" 14 28 42))])
       (hash-set! h (car x) (cdr x)))
     h))
 
@@ -33,25 +33,25 @@
 (define factories-db
   (let ((h (make-hash)))
     (for ([x (list
-              (list "Пар Завод ракет \"Булава\" L" (hms 0 10) '(("Батареи" raw -750)
-                                                                ("Руда" raw -125)
-                                                                ("Соевая мука" raw -100)
-                                                                ("Заградительная ракета \"Булава\"" final 5)))
-              (list "Пар Завод ракет \"Томагавк\" XL" (hms 0 20) '(("Батареи" raw -3000)
-                                                                   ("Руда" raw -500)
-                                                                   ("Соевая мука" raw -400)
-                                                                   ("Тяжелая ракета \"Томагавк\"" final 30)))
-              (list "Пар Соевая фабрика XL" (hms 0 1) '(("Батареи" raw -150)
-                                                        ("Соевые бобы" raw -120)
-                                                        ("Соевая мука" final 20)))
-              (list "Пар Соевая ферма XL" (hms 0 1) '(("Батареи" raw -150)
-                                                      ("Соевые бобы" final 120)))
-              (list "Рудная шахта XL 1-15-30" (hms 0 1 15) '(("Батареи" raw -180)
-                                                             ("Руда" final 30)))
-              (list "Рудная шахта XL 1-3-30" (hms 0 1 15) '(("Батареи" raw -180)
-                                                            ("Руда" final 30)))
-              (list "Кремниевая шахта XL 1-58-20" (hms 0 1 58) '(("Батареи" raw -480)
-                                                                 ("Кремниевые пластины" final 20))))])
+              (list "Par Flail Missile Production Facility L" (hms 0 10) '(("Energy cells" raw -750)
+                                                                           ("Ore" raw -125)
+                                                                           ("Soja Husk" raw -100)
+                                                                           ("Flail Barrage Missile" final 5)))
+              (list "Par Tomahawk Missile Manufacturing Plant XL" (hms 0 20) '(("Energy cells" raw -3000)
+                                                                               ("Ore" raw -500)
+                                                                               ("Soja Husk" raw -400)
+                                                                               ("Tomahawk Heavy Missile" final 30)))
+              (list "Par Soyery XL" (hms 0 1) '(("Energy cells" raw -150)
+                                                ("Soja Beans" raw -120)
+                                                ("Soja Husk" final 20)))
+              (list "Par Soyfarm XL" (hms 0 1) '(("Energy cells" raw -150)
+                                                 ("Soja Beans" final 120)))
+              (list "Par Ore Mine XL 1-15-30" (hms 0 1 15) '(("Energy cells" raw -180)
+                                                             ("Ore" final 30)))
+              (list "Par Ore Mine XL 1-3-30" (hms 0 1 3) '(("Energy cells" raw -180)
+                                                           ("Ore" final 30)))
+              (list "Silicon Mine XL 1-58-20" (hms 0 1 58) '(("Energy cells" raw -480)
+                                                             ("Silicon Wafers" final 20))))])
       (hash-set! h (car x) (apply make-factory x)))
     h))
 
@@ -65,13 +65,13 @@
 
 (define complex
   (make-complex (list
-                 (cons 2 "Пар Завод ракет \"Булава\" L")
-                 "Пар Завод ракет \"Томагавк\" XL"
-                 (cons 2 "Пар Соевая фабрика XL")
-                 (cons 2 "Пар Соевая ферма XL")
-                 "Рудная шахта XL 1-15-30"
-                 "Рудная шахта XL 1-3-30"
-                 "Кремниевая шахта XL 1-58-20")))
+                 (cons 2 "Par Flail Missile Production Facility L")
+                 "Par Tomahawk Missile Manufacturing Plant XL"
+                 (cons 2 "Par Soyery XL")
+                 (cons 2 "Par Soyfarm XL")
+                 "Par Ore Mine XL 1-15-30"
+                 "Par Ore Mine XL 1-3-30"
+                 "Silicon Mine XL 1-58-20")))
 
 (define (union-using-type t1 t2)
   (if (equal? t1 t2) t1 'inter))
@@ -127,7 +127,12 @@
     (list [+ (car x) (caddr y)]
           [+ (cadr x) (cadr y)]
           [+ (caddr x) (car y)]))
+  (define (print-s args)
+    (define-values (s1 s2 s3)
+      (apply values (map (λ (x) (cat (exact->inexact x) 15 '(#\ ) 2.)) args)))
+    (printf "\n~a~a~a\n" s1 s2 s3))
   (define (calc-balance items)
+    (displayln '---------------------------------------------)
     (let loop ([item-list items]
                [bl '(0 0 0)])
       (cond
@@ -137,7 +142,7 @@
          (define prices (hash-ref wares-db (car w)))
          (displayln (car w))
          (define num (* (cddr w) tm))
-         (displayln (exact->inexact num))
+         (displayln (cat (exact->inexact num) 15 '(#\ ) 2.))
          (if (> (cddr w) 0)
              (loop (cdr item-list) (list
                                     (+ (car bl) (* (car prices) num))
@@ -147,6 +152,15 @@
                                     (+ (car bl) (* (caddr prices) num))
                                     (+ (cadr bl) (* (cadr prices) num))
                                     (+ (caddr bl) (* (car prices) num)))))])))
-  (displayln (calc-balance raw))
-  (displayln (calc-balance inter))
-  (displayln (calc-balance final)))
+  (define-values (sraw sinter sfinal)
+    (apply values (map calc-balance (list raw inter final))))
+  (displayln '---------------------RAW---------------------)
+  (print-s sraw)
+  (displayln '--------------------INTER--------------------)
+  (print-s sinter)
+  (displayln '--------------------FINAL--------------------)
+  (print-s sfinal)
+  (displayln '---------------------------------------------)
+  (print-s (+< (+> sfinal sinter) sraw)))
+
+(print-balance (hash->list (calc-complex complex)))
