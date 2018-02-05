@@ -32,9 +32,9 @@
                                             ("Soja Husk" final 20))))
     (cons "Par Soyfarm XL" (list (hms 0 1) '(("Energy cells" raw -150)
                                              ("Soja Beans" final 120))))
-    (cons "Par Ore Mine XL 1-15-30" (list (hms 0 1 15) '(("Energy cells" raw -180)
+    (cons "Ore Mine XL 1-15-30" (list (hms 0 1 15) '(("Energy cells" raw -180)
                                                          ("Ore" final 30))))
-    (cons "Par Ore Mine XL 1-3-30" (list (hms 0 1 3) '(("Energy cells" raw -180)
+    (cons "Ore Mine XL 1-3-30" (list (hms 0 1 3) '(("Energy cells" raw -180)
                                                        ("Ore" final 30))))
     (cons "Silicon Mine XL 1-58-20" (list (hms 0 1 58) '(("Energy cells" raw -480)
                                                          ("Silicon Wafers" final 20)))))))
@@ -53,8 +53,8 @@
                  "Par Tomahawk Missile Manufacturing Plant XL"
                  (cons 2 "Par Soyery XL")
                  (cons 2 "Par Soyfarm XL")
-                 "Par Ore Mine XL 1-15-30"
-                 "Par Ore Mine XL 1-3-30"
+                 "Ore Mine XL 1-15-30"
+                 "Ore Mine XL 1-3-30"
                  "Silicon Mine XL 1-58-20")))
 
 (define (union-using-type t1 t2)
